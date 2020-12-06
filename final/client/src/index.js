@@ -2,16 +2,17 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import {
   ApolloClient,
+  InMemoryCache,
   NormalizedCacheObject,
   ApolloProvider,
   gql,
   useQuery
 } from '@apollo/client';
 
-import Pages from './pages';
-import Login from './pages/login';
 import injectStyles from './styles';
-import { cache } from './cache';
+
+
+import App from './App';
 
 export const typeDefs = gql`
   extend type Query {
@@ -19,20 +20,24 @@ export const typeDefs = gql`
     cartItems: [ID!]!
   }
 `;
+const client = new ApolloClient({
+  uri: "https://app---staging.qonver.com/api",
+  cache: new InMemoryCache()
+});
 
 // Set up our apollo-client to point at the server we created
 // this can be local or a remote endpoint
-const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
-  cache,
-  uri: 'http://localhost:4000/graphql',
-  headers: {
-    authorization: localStorage.getItem('token') || '',
-    'client-name': 'Space Explorer [web]',
-    'client-version': '1.0.0',
-  },
-  typeDefs,
-  resolvers: {},
-});
+// const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
+//   cache: new InMemoryCache(),
+//   uri: 'http://localhost:4000/graphql',
+//   // headers: {
+//   //   authorization: localStorage.getItem('token') || '',
+//   //   'client-name': 'Space Explorer [web]',
+//   //   'client-version': '1.0.0',
+//   // },
+//   // typeDefs,
+//   resolvers: {},
+// });
 
 /**
  * Render our app
@@ -44,21 +49,13 @@ const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
  *    ex: localhost:3000/login will render only the `Login` component
  */
 
-const IS_LOGGED_IN = gql`
-  query IsUserLoggedIn {
-    isLoggedIn @client
-  }
-`;
 
-function IsLoggedIn() {
-  const { data } = useQuery(IS_LOGGED_IN);
-  return data.isLoggedIn ? <Pages /> : <Login />;
-}
+
 
 injectStyles();
 ReactDOM.render(
   <ApolloProvider client={client}>
-    <IsLoggedIn />
+    <App />
   </ApolloProvider>,
   document.getElementById('root'),
 );
